@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block htmltitle %}
+  {% if page and page.meta and page.meta.seo_title %}
+    <title>{{ page.meta.seo_title }}</title>
+  {% else %}
+    {{ super() }}
+  {% endif %}
+{% endblock %}
+
+{% block extrahead %}
+  {{ super() }}
+  {% if page %}
+    {% if page.meta and page.meta.seo_title %}
+      {% set og_title = page.meta.seo_title %}
+    {% elif page.title and not page.is_homepage %}
+      {% set og_title = (page.title | striptags) ~ " | Satya Sai Pasupuleti" %}
+    {% else %}
+      {% set og_title = config.site_name %}
+    {% endif %}
+    {% set og_description = page.meta.description if page.meta and page.meta.description else config.site_description %}
+    <meta property="og:type" content="{% if page.is_homepage %}website{% else %}article{% endif %}">
+    <meta property="og:site_name" content="{{ config.site_name }}">
+    <meta property="og:title" content="{{ og_title }}">
+    <meta property="og:description" content="{{ og_description }}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{ og_title }}">
+    <meta name="twitter:description" content="{{ og_description }}">
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script>
+    // Always open a new page at the top, unless the link targets a section.
+    (function () {
+      try { if ("scrollRestoration" in history) history.scrollRestoration = "manual"; } catch (e) {}
+      function toTop() { if (!location.hash) window.scrollTo(0, 0); }
+      toTop();
+      window.addEventListener("load", toTop);
+      window.addEventListener("pageshow", toTop);
+    })();
+  </script>
+{% endblock %}

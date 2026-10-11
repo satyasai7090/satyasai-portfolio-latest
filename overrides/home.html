@@ -1,0 +1,576 @@
+{% extends "main.html" %}
+
+{% block tabs %}
+{{ super() }}
+
+<style>
+  /* Homepage: hide the docs chrome and render a full-width editorial page */
+  .md-header, .md-tabs, .md-footer { display: none; }
+  .md-main { margin-top: 0 !important; }
+  .md-main__inner { margin: 0; max-width: 100%; }
+  .md-content { max-width: 100%; padding: 0; }
+  .md-content__inner { margin: 0; padding: 0 !important; max-width: none !important; }
+  .md-content__inner > h1:first-child { display: none; }
+
+  .sp-home {
+    --pad: 96px;
+    font-family: var(--serif);
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .sp-home a { color: var(--accent); }
+  .sp-home a:hover { color: var(--accent-dk); }
+  .sp-mono { font-family: var(--mono); letter-spacing: 0.12em; text-transform: uppercase; }
+
+  /* Masthead */
+  .sp-masthead {
+    padding: 44px var(--pad) 28px;
+    border-bottom: 2px solid var(--ink);
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 24px;
+  }
+  .sp-id { flex: 1 1 auto; min-width: 0; container-type: inline-size; }
+  .sp-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: min(75px, 100cqw / 9.3);
+    font-weight: 800; letter-spacing: -0.02em; line-height: 1; color: var(--ink);
+    white-space: nowrap;
+  }
+  .sp-name span { color: var(--accent); }
+  .sp-cap-short { display: none; }
+  .sp-title-line { font-size: min(14px, 100cqw / 57); white-space: nowrap; color: var(--ink-soft); margin-top: 10px; }
+  .sp-links { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 16px; }
+  .sp-masthead { column-gap: 48px; }
+  .sp-links svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .sp-links-row { display: flex; gap: 22px; flex-wrap: wrap; }
+  .sp-home .sp-links-row a { display: inline-flex; align-items: center; gap: 7px; font-size: 0.72rem; color: var(--ink-soft); text-decoration: none; }
+  .sp-home .sp-links-row a:hover { color: var(--accent); }
+  .sp-links-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  .sp-home a.sp-pill { display: inline-flex; align-items: center; gap: 8px; font-size: 0.72rem; padding: 11px 16px; border-radius: 4px; color: var(--ink); text-decoration: none; box-shadow: inset 0 0 0 1px var(--ink); }
+  .sp-home a.sp-pill:hover { background: var(--ink); color: var(--cream); }
+  .sp-home a.sp-pill-solid { background: var(--ink); color: var(--cream); }
+  .sp-home a.sp-pill-solid:hover { background: #000; }
+
+  /* Intro */
+  .sp-intro {
+    padding: 72px var(--pad) 64px;
+    display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .sp-intro-main { grid-column: span 7; display: flex; flex-direction: column; gap: 24px; }
+  .sp-home h1.sp-headline {
+    margin: 0; padding: 0; border: 0;
+    font-family: var(--serif);
+    font-size: clamp(2.1rem, 3.6vw, 3.25rem);
+    font-weight: 600; line-height: 1.08; letter-spacing: -0.015em; color: var(--ink);
+    text-wrap: balance;
+  }
+  .sp-lede { text-wrap: pretty; margin: 0; font-size: 1.3rem; line-height: 1.6; color: var(--ink-mid); max-width: 36em; }
+  .sp-actions { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; padding-top: 8px; }
+  .sp-home a.sp-button {
+    background: var(--ink); color: var(--cream); text-decoration: none;
+    font-size: 0.85rem; padding: 15px 22px; border-radius: 4px;
+  }
+  .sp-home a.sp-button:hover { background: #000; color: var(--cream); }
+  .sp-home a.sp-button-outline { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+  .sp-home a.sp-button-outline:hover { background: var(--ink); color: var(--cream); }
+  .sp-email { font-size: 1.1rem; padding: 12px 0; }
+
+  .sp-skills { grid-column: 9 / span 4; display: flex; flex-direction: column; gap: 18px; padding-top: 8px; }
+  .sp-statement { margin: 0 0 18px; font-family: var(--serif); font-size: 1.55rem; font-weight: 600; line-height: 1.25; letter-spacing: -0.01em; color: var(--ink); text-wrap: balance; }
+  .sp-label { font-size: 0.75rem; color: var(--accent); }
+  .sp-home h1.sp-h1-label { margin: 0; padding: 0; border: 0; font-family: var(--mono); font-weight: 400; line-height: 1.4; letter-spacing: 0.12em; }
+  .sp-skills ul { margin: 0; padding: 0; list-style: none; font-size: 1.1rem; line-height: 1.45; }
+  .sp-skills li { padding: 12px 0; border-top: 1px solid var(--rule); margin: 0; }
+  .sp-skills li:last-child { border-bottom: 1px solid var(--rule); }
+
+  /* Samples */
+  .sp-samples { padding: 64px var(--pad) 40px; display: flex; flex-direction: column; gap: 28px; }
+  .sp-samples-head { display: flex; justify-content: space-between; align-items: baseline; gap: 24px; flex-wrap: wrap; }
+  .sp-home h2.sp-h2 {
+    margin: 0; padding: 0; border: 0;
+    font-family: var(--serif); font-size: 2.1rem; font-weight: 600; letter-spacing: -0.01em; color: var(--ink);
+  }
+  .sp-note { font-family: var(--mono); font-size: 0.8rem; color: var(--ink-soft); }
+  .sp-rows { display: flex; flex-direction: column; }
+  .sp-row {
+    display: grid; grid-template-columns: 200px minmax(0, 1fr) 260px 110px; column-gap: 32px;
+    padding: 24px 0; border-bottom: 1px solid var(--rule); align-items: baseline;
+  }
+  .sp-row-head { padding: 0 0 12px; border-bottom: 2px solid var(--ink); font-size: 0.75rem; color: var(--ink-soft); }
+  .sp-type { font-size: 0.8rem; letter-spacing: 0.06em; color: var(--accent); }
+  .sp-sample { display: flex; flex-direction: column; gap: 6px; }
+  .sp-home a.sp-sample-title {
+    font-size: 1.45rem; font-weight: 600; line-height: 1.25; color: var(--ink); text-decoration: none;
+  }
+  .sp-home a.sp-sample-title:hover { color: var(--accent); }
+  .sp-desc, .sp-for { font-size: 1rem; line-height: 1.5; color: var(--ink-mid); }
+  .sp-read { font-family: var(--mono); font-size: 0.8rem; }
+
+  /* At a glance */
+  .sp-facts { margin: 0 var(--pad); display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); border-bottom: 1px solid var(--rule); }
+  .sp-facts > div { padding: 28px 24px 28px 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .sp-facts > div + div { padding-left: 24px; border-left: 1px solid var(--rule); }
+  .sp-fact-num { font-family: 'Playfair Display', Georgia, serif; font-size: 2.6rem; font-weight: 800; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .sp-fact-label { font-size: 0.68rem; letter-spacing: 0.08em; line-height: 1.6; color: var(--ink-soft); }
+
+  /* Case studies */
+  .sp-cases { padding: 64px var(--pad) 8px; display: flex; flex-direction: column; gap: 28px; }
+  .sp-case-list { border-top: 2px solid var(--ink); }
+  .sp-case { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); column-gap: 56px; row-gap: 16px; padding: 28px 0 32px; border-bottom: 1px solid var(--rule); }
+  .sp-case-head { display: flex; flex-direction: column; gap: 10px; }
+  .sp-case-tags { font-size: 0.68rem; letter-spacing: 0.08em; color: var(--ink-soft); line-height: 1.6; }
+  .sp-case-grid { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 40px; }
+  .sp-case-grid dt { font-size: 0.68rem; color: var(--accent); margin-bottom: 6px; }
+  .sp-case-grid dd { margin: 0; font-size: 1.02rem; line-height: 1.55; color: var(--ink-mid); }
+  .sp-case > .sp-read { grid-column: 2; }
+
+  /* Stakes */
+  .sp-stakes { padding: 40px var(--pad) 8px; display: flex; flex-direction: column; gap: 28px; }
+  .sp-stake-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 2px solid var(--ink); border-bottom: 1px solid var(--rule); }
+  .sp-stake { padding: 24px 24px 28px 0; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .sp-stake + .sp-stake { padding-left: 24px; border-left: 1px solid var(--rule); }
+  .sp-stake .sp-type { line-height: 1.5; }
+  .sp-stake p { margin: 0; font-size: 1rem; line-height: 1.55; color: var(--ink-mid); }
+  .sp-stakes-close { margin: 0; font-size: 1.3rem; font-style: italic; color: var(--ink); }
+
+  /* Samples: tabs by category with cover thumbnails */
+  .sp-tab-input { position: absolute; opacity: 0; pointer-events: none; }
+  .sp-tablist { display: flex; border-bottom: 2px solid var(--ink); overflow-x: auto; scrollbar-width: none; }
+  .sp-tablist::-webkit-scrollbar { display: none; }
+  .sp-tablist label { flex: none; cursor: pointer; font-size: 0.75rem; padding: 14px 20px; color: var(--ink-soft); white-space: nowrap; }
+  .sp-tablist label:hover { color: var(--ink); }
+  .sp-tablist label em { font-style: normal; color: var(--accent); margin-left: 7px; }
+  .sp-panel { display: none; }
+  .sp-panel-about { margin: 0; padding: 24px 0 8px; max-width: 46em; font-size: 1.1rem; line-height: 1.55; color: var(--ink-mid); }
+  .sp-home a.sp-srow { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 28px; align-items: center; padding: 18px 0; border-bottom: 1px solid var(--rule); color: var(--ink); text-decoration: none; }
+  .sp-home a.sp-srow:hover .sp-sample-title { color: var(--accent); }
+  .sp-thumb { width: 96px; height: 124px; border: 1px solid var(--rule); border-radius: 3px; background: var(--paper); object-fit: cover; object-position: top; display: block; }
+  .sp-thumb-code { background: var(--code-bg); border-color: var(--code-bg); color: var(--code-text); font: 400 10px/1.55 var(--mono); padding: 10px; overflow: hidden; white-space: pre-line; }
+  .sp-thumb-word { display: flex; align-items: center; justify-content: center; font: 800 30px 'Playfair Display', Georgia, serif; color: var(--ink); background: #efe9df; }
+  .sp-srow-main { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .sp-srow .sp-sample-title { font-size: 1.3rem; font-weight: 600; line-height: 1.25; }
+  .sp-srow .sp-desc { font-size: 1rem; }
+  .sp-srow .sp-read { color: var(--accent); }
+  .sp-srow-for { font-size: 0.65rem; letter-spacing: 0.08em; color: var(--ink-soft); }
+  #sp-tab-0:checked ~ .sp-panels .sp-panel:nth-child(1) { display: block; }
+  #sp-tab-0:checked ~ .sp-tablist label:nth-child(1) { color: var(--ink); box-shadow: inset 0 -3px 0 var(--accent); }
+  #sp-tab-0:focus-visible ~ .sp-tablist label:nth-child(1) { outline: 2px solid var(--accent); outline-offset: -2px; }
+  #sp-tab-1:checked ~ .sp-panels .sp-panel:nth-child(2) { display: block; }
+  #sp-tab-1:checked ~ .sp-tablist label:nth-child(2) { color: var(--ink); box-shadow: inset 0 -3px 0 var(--accent); }
+  #sp-tab-1:focus-visible ~ .sp-tablist label:nth-child(2) { outline: 2px solid var(--accent); outline-offset: -2px; }
+  #sp-tab-2:checked ~ .sp-panels .sp-panel:nth-child(3) { display: block; }
+  #sp-tab-2:checked ~ .sp-tablist label:nth-child(3) { color: var(--ink); box-shadow: inset 0 -3px 0 var(--accent); }
+  #sp-tab-2:focus-visible ~ .sp-tablist label:nth-child(3) { outline: 2px solid var(--accent); outline-offset: -2px; }
+  #sp-tab-3:checked ~ .sp-panels .sp-panel:nth-child(4) { display: block; }
+  #sp-tab-3:checked ~ .sp-tablist label:nth-child(4) { color: var(--ink); box-shadow: inset 0 -3px 0 var(--accent); }
+  #sp-tab-3:focus-visible ~ .sp-tablist label:nth-child(4) { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+  /* API example */
+  .sp-api { margin: 40px var(--pad) 0; padding: 40px 0 48px; border-top: 2px solid var(--ink); display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); column-gap: 56px; row-gap: 28px; }
+  .sp-api-text { display: flex; flex-direction: column; gap: 16px; }
+  .sp-api-text p { margin: 0; font-size: 1.05rem; line-height: 1.6; color: var(--ink-mid); }
+  .sp-api-text code { font-family: var(--mono); font-size: 0.85em; background: var(--code-inline-bg); color: var(--ink); padding: 0.1em 0.35em; border-radius: 3px; }
+  .sp-api-links { display: flex; flex-wrap: wrap; gap: 8px 24px; padding-top: 4px; }
+  .sp-api-code { min-width: 0; background: var(--code-bg); border-radius: 6px; padding: 6px 0 4px; }
+  .sp-code-head { text-transform: none; display: flex; justify-content: space-between; gap: 12px; padding: 10px 18px 0; font-size: 0.62rem; letter-spacing: 0.08em; color: #b8b0a3; }
+  .sp-code-head .sp-ok { color: #9cc7a4; }
+  .sp-api-code pre { margin: 0; padding: 8px 18px 14px; overflow-x: auto; border-bottom: 1px solid #3a352f; }
+  .sp-api-code pre:last-child { border-bottom: 0; }
+  .sp-api-code code { font-family: var(--mono); font-size: 0.8rem; line-height: 1.6; color: var(--code-text); background: none; }
+  .sp-api-code mark { background: none; color: #f08a7a; font-weight: 600; }
+
+  /* Tools: collapsible rows */
+  .sp-tool-acc { border-top: 2px solid var(--ink); }
+  .sp-acc { border-bottom: 1px solid var(--rule); }
+  .sp-acc summary { list-style: none; cursor: pointer; display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; padding: 24px 0; }
+  .sp-acc summary::-webkit-details-marker { display: none; }
+  .sp-acc summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+  .sp-acc-head { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .sp-acc-title { font-size: 1.45rem; font-weight: 600; line-height: 1.25; color: var(--ink); }
+  .sp-acc summary:hover .sp-acc-title { color: var(--accent); }
+  .sp-acc-teaser { font-size: 1.05rem; line-height: 1.5; color: var(--ink-mid); max-width: 46em; }
+  .sp-acc-icon { flex: none; width: 36px; height: 36px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--ink); position: relative; margin-top: 4px; }
+  .sp-acc-icon::before, .sp-acc-icon::after { content: ""; position: absolute; left: 50%; top: 50%; width: 14px; height: 1.5px; background: var(--ink); transform: translate(-50%, -50%); transition: transform 0.2s; }
+  .sp-acc-icon::after { transform: translate(-50%, -50%) rotate(90deg); }
+  .sp-acc[open] .sp-acc-icon::after { transform: translate(-50%, -50%) rotate(0deg); }
+  .sp-acc[open] .sp-acc-icon { background: var(--ink); }
+  .sp-acc[open] .sp-acc-icon::before, .sp-acc[open] .sp-acc-icon::after { background: var(--cream); }
+  .sp-acc-body { padding: 0 0 28px; display: flex; flex-direction: column; gap: 18px; }
+  .sp-acc-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  @media (max-width: 1100px) { .sp-acc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (prefers-reduced-motion: reduce) { .sp-acc-icon::before, .sp-acc-icon::after { transition: none; } }
+
+  /* Tools */
+  .sp-tools { padding: 40px var(--pad) 8px; display: flex; flex-direction: column; gap: 28px; }
+  .sp-tool-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 56px; border-top: 2px solid var(--ink); }
+  .sp-tool { padding: 28px 0 32px; border-bottom: 1px solid var(--rule); display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .sp-tool-head { display: flex; flex-direction: column; gap: 8px; }
+  .sp-tool-head .sp-sample-title { font-size: 1.35rem; font-weight: 600; line-height: 1.25; color: var(--ink); }
+  .sp-tool .sp-desc { margin: 0; }
+  .sp-tool-foot { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: auto; }
+
+  /* How I work */
+  .sp-how {
+    margin: 24px var(--pad) 0; padding: 40px 0 48px; border-top: 1px solid var(--rule);
+    display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px;
+  }
+  .sp-how .sp-label { grid-column: span 4; }
+  .sp-how p { grid-column: 5 / span 8; margin: 0; font-size: 1.2rem; line-height: 1.6; color: var(--ink-mid); }
+
+  /* Built with */
+  .sp-built { padding: 8px var(--pad) 48px; display: flex; flex-direction: column; gap: 28px; }
+  .sp-built-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 2px solid var(--ink); }
+  .sp-built-list > div { padding: 22px 24px 24px 0; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .sp-built-list > div + div { padding-left: 24px; border-left: 1px solid var(--rule); }
+  .sp-built-list p { margin: 0; font-size: 1rem; line-height: 1.55; color: var(--ink-mid); }
+
+  /* Contact */
+  .sp-contact { margin: 0 var(--pad); padding: 56px 0 64px; border-top: 2px solid var(--ink); display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; }
+  .sp-contact-main { grid-column: span 7; display: flex; flex-direction: column; gap: 20px; }
+  .sp-contact .sp-skills { grid-column: 9 / span 4; }
+  .sp-contact .sp-email { color: var(--ink-mid); user-select: all; }
+  .sp-contact-links { display: flex; gap: 28px; font-size: 0.8rem; }
+  .sp-home .sp-contact-links a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--ink); padding-bottom: 4px; }
+  .sp-home .sp-contact-links a:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* Footer */
+  .sp-footer {
+    margin-top: auto; border-top: 2px solid var(--ink); padding: 26px var(--pad);
+    display: flex; justify-content: space-between; gap: 16px; font-size: 0.8rem; color: var(--ink-soft);
+  }
+  .sp-footer > div:first-child { min-width: 0; }
+  .sp-footer-links { display: flex; gap: 20px; flex-wrap: wrap; flex-shrink: 0; }
+  .sp-home .sp-footer-links a { color: var(--ink); }
+
+  @media (max-width: 1180px) {
+    .sp-masthead { flex-direction: column; align-items: flex-start; row-gap: 24px; }
+    .sp-id { width: 100%; }
+    .sp-links { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 16px 32px; }
+  }
+  @media (max-width: 600px) {
+    .sp-cap-full { display: none; }
+    .sp-cap-short { display: inline; }
+    .sp-home .sp-title-line { font-size: min(14px, 100cqw / 31); }
+  }
+  @media (max-width: 1100px) {
+    .sp-home { --pad: 48px; }
+    .sp-row { grid-template-columns: 170px minmax(0, 1fr) 200px 90px; column-gap: 24px; }
+  }
+  @media (max-width: 860px) {
+    .sp-home { --pad: 20px; }
+    .sp-masthead { flex-direction: column; align-items: flex-start; padding-top: 28px; }
+    .sp-id { width: 100%; }
+    .sp-links { align-items: flex-start; }
+    .sp-title-line { letter-spacing: 0.04em; font-size: min(14px, 100cqw / 51); }
+    .sp-intro { display: flex; flex-direction: column; gap: 32px; padding-top: 32px; padding-bottom: 32px; }
+    .sp-lede { font-size: 1.15rem; }
+    .sp-samples { padding-top: 32px; }
+    .sp-home h2.sp-h2 { font-size: 1.65rem; }
+    .sp-row { display: flex; flex-direction: column; gap: 6px; padding: 18px 0; }
+    .sp-rows .sp-row:nth-child(2) { border-top: 2px solid var(--ink); }
+    .sp-row.sp-row-head { display: none; }
+    .sp-home a.sp-srow { grid-template-columns: 64px minmax(0, 1fr); gap: 16px; align-items: start; }
+    .sp-thumb { width: 64px; height: 84px; }
+    .sp-thumb-code { font-size: 7px; padding: 6px; }
+    .sp-thumb-word { font-size: 22px; }
+    .sp-srow .sp-read { display: none; }
+    .sp-acc summary { gap: 16px; padding: 20px 0; }
+    .sp-acc-title { font-size: 1.2rem; }
+    .sp-acc-teaser { font-size: 1rem; }
+    .sp-acc-icon { width: 30px; height: 30px; }
+    .sp-acc-grid { grid-template-columns: 1fr; }
+    .sp-tablist { display: grid; grid-template-columns: 1fr 1fr; overflow: visible; }
+    .sp-tablist label { padding: 12px 8px; font-size: 0.68rem; white-space: normal; }
+    .sp-srow .sp-sample-title { font-size: 1.1rem; }
+    .sp-panel-about { font-size: 1rem; }
+    .sp-contact { display: flex; flex-direction: column; gap: 32px; padding: 32px 0 40px; }
+    .sp-built-list { grid-template-columns: 1fr; }
+    .sp-built-list > div, .sp-built-list > div + div { padding: 18px 0; border-left: 0; }
+    .sp-built-list > div + div { border-top: 1px solid var(--rule); }
+    .sp-api { display: flex; flex-direction: column; padding-top: 28px; }
+    .sp-stake-list { grid-template-columns: 1fr; }
+    .sp-stake, .sp-stake + .sp-stake { padding: 20px 0; border-left: 0; }
+    .sp-stake + .sp-stake { border-top: 1px solid var(--rule); }
+    .sp-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .sp-facts > div { padding: 20px 12px 20px 0; }
+    .sp-facts > div + div { padding-left: 0; border-left: 0; }
+    .sp-facts > div:nth-child(even) { padding-left: 16px; border-left: 1px solid var(--rule); }
+    .sp-facts > div:nth-child(n+3) { border-top: 1px solid var(--rule); }
+    .sp-tools { padding-top: 24px; }
+    .sp-tool-list { grid-template-columns: 1fr; }
+    .sp-cases { padding-top: 32px; }
+    .sp-case { display: flex; flex-direction: column; }
+    .sp-case-grid { grid-template-columns: 1fr; }
+    .sp-case > .sp-read { display: inline; }
+    .sp-meta .sp-read { display: none; }
+    .sp-how { display: flex; flex-direction: column; gap: 10px; padding: 28px 0; }
+    .sp-how p { font-size: 1.05rem; }
+    .sp-footer { flex-direction: column; }
+  }
+</style>
+
+{% macro link(page) -%}
+{%- if config.use_directory_urls -%}{{ page[:-5] if page.endswith('index') else page ~ '/' }}{%- else -%}{{ page ~ '.html' }}{%- endif -%}
+{%- endmacro %}
+{% set tools = [
+  {"name": "AI Release Notes Composer",
+   "org": "Redwood Software · built on my own initiative",
+   "stack": ["GitHub Actions", "Claude API", "Jira", "GitHub"],
+   "teaser": "Drafts release notes automatically from Jira tickets, pull requests and engineering notes, in a consistent house format, ready for a writer to review.",
+   "problem": "Every release meant chasing changes across Jira tickets, pull requests, commits, changelogs and engineering repositories, then rewriting each one in the same format by hand. It was slow, and changes slipped through the gaps.",
+   "insight": "The sources already held everything a first draft needed. A writer's judgment belongs in reviewing and shaping the notes, not in collecting and reformatting them.",
+   "result": "A GitHub Actions workflow gathers the changes and Claude drafts consistent release notes for review. First drafts arrive faster, the format is the same every release, fewer changes are missed, and other writers and teams now use it.",
+   "role": "Built it on my own initiative: designed the workflow, wrote the GitHub Actions pipeline and the Claude prompts, and defined the release-notes structure it follows."},
+  {"name": "RMJ multi-version publisher",
+   "org": "Redwood Software · RunMyJobs documentation",
+   "stack": ["PowerShell", "Git", "MadCap Flare", "Flare Online"],
+   "teaser": "One command now publishes 10–15 product versions. Hours of manual work became minutes.",
+   "problem": "Every release meant publishing 10–15 product versions by hand: switch a Git branch, build in Flare, run a required post-build script, publish, verify, repeat. MadCap Central couldn't run the script, so hours went into orchestration every time.",
+   "insight": "The builds weren't the bottleneck; the manual orchestration around them was. Each version branch could be processed on its own without touching the build logic.",
+   "result": "One PowerShell command now builds and publishes every version in sequence, each as its own verifiable build in Flare Online. Hours of manual work became minutes of setup.",
+   "role": "Took this on outside my role. I spotted the bottleneck, designed the workflow and built the tool myself, without changing the existing build process.",
+   "href": "case-studies/rmj-publishing-pipeline", "internal": true, "cta": "Read the full story"},
+  {"name": "XML to Markdown docs-as-code migration",
+   "org": "Redwood Software · team project",
+   "stack": ["Git", "Markdown", "Markdownlint", "CSpell", "XML", "MadCap Flare"],
+   "teaser": "Moved 150+ legacy XML manuals, over 5,000 pages, into Markdown in Git with automated quality checks. Zero formatting defects.",
+   "problem": "150+ legacy XML manuals ran through a publishing chain that was slower than the products it documented, and manual review kept letting formatting errors through.",
+   "insight": "Formatting quality shouldn't depend on a tired reviewer. If checks ran automatically on every change, review time could go to the content itself.",
+   "result": "5,000+ pages now live as Markdown in Git, with Markdownlint and CSpell checks in CI. Zero formatting defects, 40% faster deployment and 15+ hours saved every week.",
+   "role": "Part of the migration team. I converted and restructured content, defined the Markdown conventions and structure, set up the lint and spell checks, and validated and fixed the migrated output."},
+  {"name": "LinkedIn autopilot agent",
+   "org": "Personal project · live since May 2026",
+   "stack": ["n8n", "Claude API", "NewsAPI", "Supabase", "Twilio", "Google Sheets"],
+   "teaser": "Finds the day's AI news, drafts a post in my voice and publishes it to LinkedIn every morning, after my approval.",
+   "problem": "Posting consistently about AI and documentation meant finding the day's news, reading it and drafting a post in my own voice, every single morning.",
+   "insight": "Everything except judgment was repeatable. I could automate the research, drafting and publishing, and keep a human approval step through a preview.",
+   "result": "Every morning the agent picks the most relevant AI story, writes a post in my voice, sends me a WhatsApp preview, publishes to LinkedIn and logs it. It has run daily since May 2026 for a few dollars a month.",
+   "role": "Designed and built it end to end: the workflow in n8n, the prompts and voice profile, and the integrations.",
+   "href": "https://github.com/satyasai7090/linkedin-autopilot-agent", "internal": false, "cta": "View on GitHub"}
+] %}
+{% set groups = [
+  {"label": "API docs", "anchor": "api",
+   "about": "Reference and integration docs that take a developer from an API key to a working request: endpoints, parameters, examples, authentication and errors.",
+   "samples": [
+     {"title": "Nexus MFT API documentation", "desc": "Endpoints, authentication and webhooks for a managed file transfer REST API. 3 pages.",
+      "for": "Developers and integration engineers", "page": "api-docs/nexus-mft/index",
+      "code": "POST /v1/transfers\n201 Created\n\nGET /transfers/{id}\n200 OK"}]},
+  {"label": "Product & user guides", "anchor": "guides",
+   "about": "Task-based guides that help people set up, use and fix a product, written for the person doing the task.",
+   "samples": [
+     {"title": "HealthMate Pro BPM-500 user guide", "desc": "Operation, troubleshooting, maintenance, safety and regulatory content for a medical device. 19 pages.",
+      "for": "Patients and caregivers", "page": "guides/healthmate-bpm-500-user-guide", "img": "assets/images/covers/healthmate-bpm-500-cover.png"},
+     {"title": "HealthMate smart glucometer quick start", "desc": "Set up, operate and read results from a smart medical device safely. 3 pages.",
+      "for": "First-time device users", "page": "guides/healthmate-glucometer-quick-start", "img": "assets/images/covers/healthmate-glucometer-cover.png"},
+     {"title": "PennyWise quick start and walkthrough", "desc": "Set up, navigate and use a consumer budgeting app for the first time. 6 pages.",
+      "for": "New app users", "page": "guides/pennywise-quick-start", "img": "assets/images/covers/pennywise-cover.png"},
+     {"title": "Nexus MFT knowledge base", "desc": "Symptom-based troubleshooting for connection, performance and authentication errors. 3 articles.",
+      "for": "Administrators and support engineers", "page": "guides/nexus-mft-knowledge-base/index",
+      "code": "## Connection\nrefused\n\nCause:\nport 22\nblocked"}]},
+  {"label": "Release notes", "anchor": "releases",
+   "about": "What changed in a release, why it matters, and what administrators must do before, during and after they upgrade.",
+   "samples": [
+     {"title": "CloudSuite CRM release notes (v3.12.0)", "desc": "New features, security updates, fixes, upgrade steps and known issues for an enterprise CRM. 4 pages.",
+      "for": "Administrators and enterprise customers", "page": "release-notes/cloudsuite-crm-3-12/index", "word": "3.12"},
+     {"title": "Nexus MFT release notes (v4.2.0)", "desc": "Encryption, identity federation, protocol hardening, upgrade steps and known issues for a managed file transfer platform. 4 pages.",
+      "for": "Administrators, architects and DevOps engineers", "page": "release-notes/nexus-mft-4-2/index", "word": "4.2"}]},
+  {"label": "Articles & video", "anchor": "articles",
+   "about": "Explaining ideas and workflows in other formats: a published article for writers, and a narrated product walkthrough for users.",
+   "samples": [
+     {"title": "Designing documentation for accessibility", "desc": "Practices for writing documentation that works for every reader.",
+      "for": "Technical writers and content teams", "page": "articles-and-video/accessibility-article", "word": "Aa"},
+     {"title": "Product demo walkthrough", "desc": "A narrated product walkthrough showing features in context.",
+      "for": "Prospective and new users", "page": "articles-and-video/product-demo-video", "word": "▶"}]}
+] %}
+
+<div class="sp-home">
+
+  <header class="sp-masthead">
+    <div class="sp-id">
+      <div class="sp-name">Satya Sai <span>Pasupuleti</span></div>
+      <div class="sp-title-line sp-mono"><span class="sp-cap-full">Senior technical writer · Information architect · AI documentation specialist</span><span class="sp-cap-short" aria-hidden="true">Sr. Technical writer · IA · AI docs specialist</span></div>
+    </div>
+    <nav class="sp-links sp-mono" aria-label="Profiles">
+      <div class="sp-links-row">
+        <a href="https://www.linkedin.com/in/satya-sai-pasupuleti-7090pj" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M3 13h18"/></svg>LinkedIn</a>
+        <a href="https://github.com/satyasai7090" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/></svg>GitHub</a>
+        <a href="https://www.instagram.com/techwriting_decoded/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg>Instagram</a>
+      </div>
+      <div class="sp-links-btns">
+        <a class="sp-pill" href="https://topmate.io/satya_sai_pasupuleti/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Book a session</a>
+        <a class="sp-pill sp-pill-solid" href="https://drive.google.com/file/d/1EbbJkW94T3EXT_Y3dWEcT66H5fRRSkov/view" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 12v6M9 15l3 3 3-3"/></svg>Resume</a>
+      </div>
+    </nav>
+  </header>
+
+  <section class="sp-intro">
+    <div class="sp-intro-main">
+      <h1 class="sp-label sp-mono sp-h1-label">Crafting clarity in complex tech</h1>
+      <p class="sp-lede">For six years I've documented software where a wrong step costs something: aerospace procedures at Cyient, mainframe data exchange at Unisys, drug safety reporting in Oracle Argus Safety, and now workload automation and managed file transfer at Redwood Software with RunMyJobs and JSCAPE MFT.</p>
+      <p class="sp-lede">I structure the information before I write it, author using industry-leading tools, and use AI where it earns its place: drafting from specs, checking terminology and consistency, and automating the repetitive work. The judgment stays mine. The speed doesn't have to.</p>
+      <div class="sp-actions">
+        <a class="sp-button sp-mono" href="{{ link('about') }}">About</a>
+        <a class="sp-button sp-button-outline sp-mono" href="#samples">Read the samples</a>
+      </div>
+    </div>
+    <aside class="sp-skills" aria-label="Skills">
+      <p class="sp-statement">Good documentation starts before the writing.</p>
+      <div class="sp-label sp-mono">Skills</div>
+      <ul>
+        <li>Information architecture</li>
+        <li>Structured authoring and content reuse</li>
+        <li>AI-assisted documentation workflows</li>
+        <li>Documentation planning</li>
+        <li>Technical editing and style guides</li>
+        <li>Docs-as-code and version control</li>
+      </ul>
+    </aside>
+  </section>
+
+  <section class="sp-facts" aria-label="At a glance">
+    <div><div class="sp-fact-num">6</div><div class="sp-fact-label sp-mono">Years in technical writing</div></div>
+    <div><div class="sp-fact-num">4</div><div class="sp-fact-label sp-mono">Industries</div></div>
+    <div><div class="sp-fact-num">200+</div><div class="sp-fact-label sp-mono">Documents delivered</div></div>
+  </section>
+
+
+  <section class="sp-stakes" id="stakes">
+    <div class="sp-samples-head">
+      <h2 class="sp-h2">In my industries, accuracy isn't a style choice.</h2>
+      <div class="sp-note">Where a documentation error costs more than a support ticket</div>
+    </div>
+    <div class="sp-stake-list">
+      <article class="sp-stake">
+        <div class="sp-type sp-mono">Aerospace · Cyient</div>
+        <p>Technical documentation for aerospace and industrial products, where a missing step or a wrong value in a procedure becomes a safety risk.</p>
+      </article>
+      <article class="sp-stake">
+        <div class="sp-type sp-mono">Drug safety · Oracle Life Sciences</div>
+        <p>Documentation for Oracle Argus Safety, used to record and report adverse drug events. Regulatory reports such as E2B(R3) and PMDA have to map exactly, or submissions fail.</p>
+      </article>
+      <article class="sp-stake">
+        <div class="sp-type sp-mono">Mainframe data · Unisys</div>
+        <p>Data Exchange for ClearPath Forward (OS 2200 and MCP), moving mainframe data into Oracle, SQL and other databases. If the configuration steps are wrong, data is lost or misread.</p>
+      </article>
+      <article class="sp-stake">
+        <div class="sp-type sp-mono">Workload automation and MFT · Redwood</div>
+        <p>RunMyJobs and JSCAPE MFT, which enterprises use to schedule business-critical jobs and move sensitive files. Customers configure production systems from what the docs say.</p>
+      </article>
+    </div>
+    <p class="sp-stakes-close">Precision isn't a preference here. It's the job.</p>
+  </section>
+
+  <section class="sp-samples" id="samples">
+    <div class="sp-samples-head">
+      <h2 class="sp-h2">Every document has a job. Every reader has a task.</h2>
+      <div class="sp-note">Samples are written for fictional products. Each opens with a short brief: audience, tools, what it shows</div>
+    </div>
+
+    <div class="sp-tabs">
+      {% for g in groups %}<input class="sp-tab-input" type="radio" name="sp-tab" id="sp-tab-{{ loop.index0 }}"{% if loop.index0 == 1 %} checked{% endif %}>{% endfor %}
+      <div class="sp-tablist sp-mono" role="tablist">
+        {% for g in groups %}<label for="sp-tab-{{ loop.index0 }}" role="tab">{{ g.label }}<em>{{ g.samples | length }}</em></label>{% endfor %}
+      </div>
+      <div class="sp-panels">
+        {% for g in groups %}
+        <div class="sp-panel" id="{{ g.anchor }}" role="tabpanel">
+          <p class="sp-panel-about">{{ g.about }}</p>
+          {% for x in g.samples %}
+          <a class="sp-srow" href="{{ link(x.page) }}">
+            {% if x.img %}<img class="sp-thumb" src="{{ x.img }}" alt="">
+            {% elif x.code %}<div class="sp-thumb sp-thumb-code" aria-hidden="true">{{ x.code | replace('\\n', '\n') }}</div>
+            {% else %}<div class="sp-thumb sp-thumb-word" aria-hidden="true">{{ x.word }}</div>{% endif %}
+            <div class="sp-srow-main">
+              <div class="sp-sample-title">{{ x.title }}</div>
+              <div class="sp-desc">{{ x.desc }}</div>
+              <div class="sp-srow-for sp-mono">For {{ x.for | lower }}</div>
+            </div>
+            <span class="sp-read">Read →</span>
+          </a>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+
+  <section class="sp-cases" id="tools">
+    <div class="sp-samples-head">
+      <h2 class="sp-h2">I automate what slows documentation down.</h2>
+      <div class="sp-note">Automation and tooling I built</div>
+    </div>
+    <div class="sp-tool-acc">
+      {% for c in tools %}
+      <details class="sp-acc">
+        <summary>
+          <div class="sp-acc-head">
+            <div class="sp-type sp-mono">{{ c.org }}</div>
+            <div class="sp-acc-title">{{ c.name }}</div>
+            <div class="sp-acc-teaser">{{ c.teaser }}</div>
+            <div class="sp-case-tags sp-mono">{{ c.stack | join(" · ") }}</div>
+          </div>
+          <span class="sp-acc-icon" aria-hidden="true"></span>
+        </summary>
+        <div class="sp-acc-body">
+          <dl class="sp-case-grid sp-acc-grid">
+            <div><dt class="sp-mono">Problem</dt><dd>{{ c.problem }}</dd></div>
+            <div><dt class="sp-mono">Insight</dt><dd>{{ c.insight }}</dd></div>
+            <div><dt class="sp-mono">Result</dt><dd>{{ c.result }}</dd></div>
+            <div><dt class="sp-mono">My role</dt><dd>{{ c.role }}</dd></div>
+          </dl>
+          {% if c.href %}<a class="sp-read" href="{% if c.internal %}{{ link(c.href) }}{% else %}{{ c.href }}{% endif %}"{% if not c.internal %} target="_blank" rel="noopener"{% endif %}>{{ c.cta }} →</a>{% endif %}
+        </div>
+      </details>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="sp-how">
+    <div class="sp-label sp-mono">How I work</div>
+    <p>I start with the user's task and the product's information architecture, then author structured, single-source content in MadCap Flare and Oxygen XML with DITA, using snippets, variables and conditions for reuse. I write to the Microsoft Writing Style Guide, test procedures against the product, and review with engineering, product and QA inside each sprint. Every product version lives on its own Git branch, and I automate what repeats, like building and publishing 10–15 versions from a single command.</p>
+  </section>
+
+
+  <section class="sp-contact" id="contact">
+    <div class="sp-contact-main">
+      <div class="sp-label sp-mono">Contact</div>
+      <h2 class="sp-h2">What complexity are you documenting right now?</h2>
+      <p class="sp-lede">If your product is hard to explain, I'd like to hear about it.</p>
+      <div class="sp-actions">
+        <a class="sp-button sp-mono" href="mailto:satyasai7090@gmail.com">Email me</a>
+        <span class="sp-email">satyasai7090@gmail.com</span>
+      </div>
+      <div class="sp-contact-links sp-mono">
+        <a href="https://www.linkedin.com/in/satya-sai-pasupuleti-7090pj" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://drive.google.com/file/d/1EbbJkW94T3EXT_Y3dWEcT66H5fRRSkov/view" target="_blank" rel="noopener">Resume</a>
+      </div>
+    </div>
+    <aside class="sp-skills" aria-label="Open to">
+      <div class="sp-label sp-mono">Open to</div>
+      <ul>
+        <li>Senior Technical Writer roles</li>
+        <li>Information Architect and documentation lead roles</li>
+      </ul>
+    </aside>
+  </section>
+
+  <footer class="sp-footer sp-mono">
+    <div>© 2026 Satya Sai Pasupuleti &nbsp;·&nbsp; Crafting clarity in complex tech</div>
+    <div class="sp-footer-links">
+      <a href="{{ link('about') }}">About</a>
+      <a href="#contact">Contact</a>
+      <a href="https://topmate.io/satya_sai_pasupuleti/" target="_blank" rel="noopener">Mentoring</a>
+      <a href="https://github.com/satyasai7090" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/satya-sai-pasupuleti-7090pj" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </footer>
+
+</div>
+
+{% endblock %}
+
+{% block content %}{% endblock %}
