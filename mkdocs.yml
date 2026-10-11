@@ -1,0 +1,66 @@
+site_name: Satya Sai Pasupuleti — Technical Writing Portfolio
+site_url: https://satyasaiwork.online/
+site_author: Satya Sai Pasupuleti
+site_description: Technical writing portfolio of Satya Sai Pasupuleti — enterprise SaaS documentation, API reference, release notes, knowledge base content, and documentation automation.
+
+copyright: "© 2026 Satya Sai Pasupuleti · Crafting clarity in complex tech"
+
+theme:
+  name: material
+  custom_dir: overrides
+  features:
+    - navigation.tabs
+    - navigation.top
+  palette:
+    scheme: default
+    primary: custom
+    accent: custom
+  font: false
+
+extra_css:
+  - assets/stylesheets/fonts.css
+  - assets/stylesheets/portfolio.css
+
+markdown_extensions:
+  - toc:
+      title: On this page
+      permalink: false
+  - admonition
+  - attr_list
+  - tables
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+nav:
+  - Home: index.md
+  - Case study:
+    - RMJ publishing pipeline: case-studies/rmj-publishing-pipeline.md
+  - API docs:
+    - Nexus MFT API documentation:
+      - API reference: api-docs/nexus-mft/index.md
+      - Authentication and security: api-docs/nexus-mft/authentication.md
+      - Webhooks and events: api-docs/nexus-mft/webhooks.md
+  - Guides:
+    - HealthMate Pro BPM-500 user guide: guides/healthmate-bpm-500-user-guide.md
+    - HealthMate glucometer quick start: guides/healthmate-glucometer-quick-start.md
+    - PennyWise quick start: guides/pennywise-quick-start.md
+    - Nexus MFT knowledge base:
+      - Connection issues: guides/nexus-mft-knowledge-base/index.md
+      - Transfer performance: guides/nexus-mft-knowledge-base/performance.md
+      - Authentication errors: guides/nexus-mft-knowledge-base/authentication.md
+  - Release notes:
+    - CloudSuite CRM 3.12.0:
+      - Introduction and overview: release-notes/cloudsuite-crm-3-12/index.md
+      - What's new: release-notes/cloudsuite-crm-3-12/whats-new.md
+      - Upgrade notes: release-notes/cloudsuite-crm-3-12/upgrade.md
+      - Known issues and support: release-notes/cloudsuite-crm-3-12/known-issues.md
+    - Nexus MFT 4.2.0:
+      - Introduction and overview: release-notes/nexus-mft-4-2/index.md
+      - What's new: release-notes/nexus-mft-4-2/whats-new.md
+      - Upgrade notes: release-notes/nexus-mft-4-2/upgrade.md
+      - Known issues and support: release-notes/nexus-mft-4-2/known-issues.md
+  - Articles & video:
+    - Accessibility article: articles-and-video/accessibility-article.md
+    - Product demo video: articles-and-video/product-demo-video.md
+  - About: about.md
